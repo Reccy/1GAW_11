@@ -647,10 +647,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Boat
       objectReference: {fileID: 0}
-    - target: {fileID: 7306063536920786242, guid: 1134f5838811d6d4389423423572570a, type: 3}
-      propertyPath: m_accelerationForce
-      value: 8
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1134f5838811d6d4389423423572570a, type: 3}
 --- !u!1001 &4544026152896542553

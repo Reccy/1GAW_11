@@ -94,8 +94,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b01bea1bf7bfa90469a0eaa03ccb527e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_accelerationForce: 5
+  m_accelerationForce: 8
   m_rotationForce: 5
+  m_maxTurnRadiusDegrees: 45
   m_modelRigidbody: {fileID: 1209224993}
   m_movementRigidbody: {fileID: 1289351446140636650}
 --- !u!114 &6889780708883849216
