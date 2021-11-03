@@ -190,6 +190,7 @@ MonoBehaviour:
   m_modelRigidbody: {fileID: 1209224993}
   m_movementRigidbody: {fileID: 1289351446140636650}
   m_dockUI: {fileID: 0}
+  m_minePrefab: {fileID: 4178721618102015641, guid: 82e39295f37b05f4ea48ed0a3a6fa0ea, type: 3}
 --- !u!114 &6889780708883849216
 MonoBehaviour:
   m_ObjectHideFlags: 0

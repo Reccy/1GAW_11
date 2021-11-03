@@ -25,6 +25,9 @@ public class BoatMover : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject m_dockUI;
 
+    [Header("Prefab Links")]
+    [SerializeField] private GameObject m_minePrefab;
+
     private Bounds ModelBounds => m_movementRigidbody.GetComponentInChildren<Collider>().bounds;
     private Ray ColRay => new Ray(ModelBounds.center, Vector3.down);
     private Vector3 ForwardDir => Vector3.ProjectOnPlane(m_modelRigidbody.transform.forward, Vector3.up).normalized;
@@ -104,14 +107,9 @@ public class BoatMover : MonoBehaviour
 
         // Aiming
 
-        if (m_isAiming)
+        if (m_isShooting)
         {
-            Debug2.DrawArrow(ModelBounds.center, ModelBounds.center + m_aimInput * 10.0f, Color.red);
-
-            if (m_isShooting)
-            {
-                Debug.Log("BANG!!!");
-            }
+            PlaceMine();
         }
 
         m_isShooting = false;
@@ -165,6 +163,11 @@ public class BoatMover : MonoBehaviour
     {
         Debug.Log("undocked");
         m_isDocked = false;
+    }
+
+    private void PlaceMine()
+    {
+        Instantiate(m_minePrefab, ModelBounds.center, Quaternion.identity, null);
     }
 
     private Vector3 CalculateMovementDir()
