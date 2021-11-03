@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 4544026151258998734}
   - component: {fileID: 4544026151258998735}
   - component: {fileID: 1555209770611921690}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Waterplane
   m_TagString: Waterplane
   m_Icon: {fileID: 0}

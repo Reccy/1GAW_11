@@ -6,22 +6,66 @@ using Reccy.DebugExtensions;
 public class BoatMover : MonoBehaviour
 {
     private Vector3 m_steerInput = Vector3.zero;
+    private Vector3 m_aimInput = Vector3.zero;
 
+    private bool m_brakeInput = false;
+
+    private bool m_isPlayer = false;
+    private bool m_isAiming = false;
+    private bool m_isShooting = false;
+
+    [Header("Movement")]
     [SerializeField] private float m_accelerationForce = 5.0f;
     [SerializeField] private float m_rotationForce = 5.0f;
     [SerializeField] private float m_maxTurnRadiusDegrees = 45;
+    [SerializeField] private float m_maxStopRadiusDegrees = 30;
     [SerializeField] private Rigidbody m_modelRigidbody;
     [SerializeField] private Rigidbody m_movementRigidbody;
+
+    [Header("UI")]
+    [SerializeField] private GameObject m_dockUI;
 
     private Bounds ModelBounds => m_movementRigidbody.GetComponentInChildren<Collider>().bounds;
     private Ray ColRay => new Ray(ModelBounds.center, Vector3.down);
     private Vector3 ForwardDir => Vector3.ProjectOnPlane(m_modelRigidbody.transform.forward, Vector3.up).normalized;
-    private Vector3 SteerDir => Vector3.ProjectOnPlane(m_steerInput, Vector3.up).normalized;
+    private Vector3 SteerVector => Vector3.ProjectOnPlane(m_steerInput, Vector3.up);
     private Vector3 LeftConstraintDir => RotatedVector(ForwardDir, -m_maxTurnRadiusDegrees);
     private Vector3 RightConstraintDir => RotatedVector(ForwardDir, m_maxTurnRadiusDegrees);
 
+    private Port m_currentPort = null;
+    private bool InDockArea => m_currentPort != null;
+    private bool m_isDocked = false;
+
     private void Awake()
     {
+        m_isPlayer = GetComponent<PlayerInputSource>() != null;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Port p = other.GetComponentInParent<Port>();
+        if (p != null)
+        {
+            m_currentPort = p;
+
+            if (m_isPlayer)
+                m_dockUI.SetActive(true);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        Port p = other.GetComponentInParent<Port>();
+        if (p != null)
+        {
+            m_currentPort = null;
+            
+            if (m_isPlayer)
+                m_dockUI.SetActive(false);
+        }
+
+        if (m_isDocked)
+            Undock();
     }
 
     private void FixedUpdate()
@@ -38,19 +82,39 @@ public class BoatMover : MonoBehaviour
 
         Vector3 targetDirection = m_movementRigidbody.velocity.normalized;
         Vector3 currentDirection = m_modelRigidbody.transform.forward;
-        /*
-        Debug2.DrawArrow(m_modelRigidbody.position, m_modelRigidbody.position + targetDirection, Color.green);
-        Debug2.DrawArrow(m_modelRigidbody.position, m_modelRigidbody.position + currentDirection, Color.red);
-        Debug2.DrawArrow(m_modelRigidbody.position + currentDirection, m_modelRigidbody.position + targetDirection, Color.blue);
-        */
+
         var rotation = Vector3.Cross(currentDirection, targetDirection) * m_rotationForce;
 
         // Yaw
         m_modelRigidbody.AddTorque(rotation, ForceMode.Acceleration);
 
         // Movement
-        Vector3 movementDir = CalculateMovementDir();
-        m_movementRigidbody.AddForce(movementDir * m_accelerationForce);
+
+        if (m_brakeInput || m_isDocked)
+        {
+            m_movementRigidbody.velocity *= 0.95f;
+        }
+        else
+        {
+            Vector3 movementDir = CalculateMovementDir();
+            m_movementRigidbody.AddForce(movementDir * m_accelerationForce);
+        }
+
+        m_brakeInput = false;
+
+        // Aiming
+
+        if (m_isAiming)
+        {
+            Debug2.DrawArrow(ModelBounds.center, ModelBounds.center + m_aimInput * 10.0f, Color.red);
+
+            if (m_isShooting)
+            {
+                Debug.Log("BANG!!!");
+            }
+        }
+
+        m_isShooting = false;
     }
 
     public void Steer(Vector3 vect)
@@ -58,10 +122,55 @@ public class BoatMover : MonoBehaviour
         m_steerInput = vect;
     }
 
+    public void Aim(Vector3 vect)
+    {
+        if (vect.sqrMagnitude == 0)
+        {
+            m_isAiming = false;
+            return;
+        }
+
+        m_isAiming = true;
+        m_aimInput = vect.normalized;
+    }
+
+    public void Shoot()
+    {
+        m_isShooting = true;
+    }
+
+    public void Brake()
+    {
+        m_brakeInput = true;
+    }
+
+    public void Dock()
+    {
+        Debug.Log("dock invoked");
+
+        if (!InDockArea)
+            return;
+
+        if (m_isDocked)
+        {
+            Undock();
+            return;
+        }
+
+        Debug.Log($"Docket at {m_currentPort.GetPortName()}");
+        m_isDocked = true;
+    }
+
+    private void Undock()
+    {
+        Debug.Log("undocked");
+        m_isDocked = false;
+    }
+
     private Vector3 CalculateMovementDir()
     {
         PolarCoordinate forwardPolar = V2P(ForwardDir, Vector3.right);
-        PolarCoordinate steerPolar = V2P(SteerDir, ForwardDir);
+        PolarCoordinate steerPolar = V2P(SteerVector, ForwardDir);
         PolarCoordinate leftConstraintPolar = V2P(LeftConstraintDir, ForwardDir);
         PolarCoordinate rightConstraintPolar = V2P(RightConstraintDir, ForwardDir);
 
@@ -69,7 +178,7 @@ public class BoatMover : MonoBehaviour
 
         Vector3 steerVector = P2V(steerPolar);
 
-        Debug2.DrawArrow(ModelBounds.center, ModelBounds.center + SteerDir);
+        Debug2.DrawArrow(ModelBounds.center, ModelBounds.center + SteerVector);
         Debug2.DrawArrow(ModelBounds.center, ModelBounds.center + ForwardDir, Color.blue);
         Debug2.DrawArrow(ModelBounds.center, ModelBounds.center + LeftConstraintDir, Color.green);
         Debug2.DrawArrow(ModelBounds.center, ModelBounds.center + RightConstraintDir, Color.green);
@@ -122,11 +231,16 @@ public class BoatMover : MonoBehaviour
         Ray ray = ColRay;
         RaycastHit hitInfo;
 
-        Physics.Raycast(ray, out hitInfo, 1.0f);
+        Physics.Raycast(ray, out hitInfo, 1.0f, LayerMask.GetMask("Water", "Default"));
 
         if (hitInfo.collider == null)
             return false;
 
         return hitInfo.collider.CompareTag("Waterplane");
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Debug.Log($"Entered trigger: {collision.gameObject}");
     }
 }
