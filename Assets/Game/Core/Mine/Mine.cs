@@ -6,23 +6,30 @@ public class Mine : MonoBehaviour
 {
     [SerializeField] private float m_timeoutSeconds = 3.0f;
     [SerializeField] private float m_damageRadius = 3.0f;
-    [SerializeField] private GameObject m_damageRadiusObj;
+    [SerializeField] private SphereCollider m_damageRadiusObj;
 
     private void Awake()
     {
-        m_damageRadiusObj.transform.localScale = Vector3.one * m_damageRadius;
+        m_damageRadiusObj.transform.localScale *= m_damageRadius;
     }
 
     private void FixedUpdate()
     {
         m_timeoutSeconds -= Time.deltaTime;
 
-        if (m_timeoutSeconds < 0)
-            JustFuckinExplode();
+        if (!m_damageRadiusObj.enabled)
+        {
+            if (m_timeoutSeconds < 0)
+                JustFuckinExplode();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void JustFuckinExplode()
     {
-        Destroy(gameObject);
+        m_damageRadiusObj.enabled = true;
     }
 }

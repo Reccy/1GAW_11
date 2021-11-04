@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b389d440d6c4b5c4f98557ec17c74a5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ySpawnPosition: 1
+  m_ySpawnPosition: 0.1
   m_enemyPrefab: {fileID: 1118982353911123902, guid: c230d03fcfe92164daea1887d27490ed, type: 3}
   m_collider: {fileID: 1942317605996700203}
 --- !u!1 &1942317605996700373

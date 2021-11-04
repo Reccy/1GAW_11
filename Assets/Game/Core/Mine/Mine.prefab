@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_timeoutSeconds: 3
   m_damageRadius: 8
-  m_damageRadiusObj: {fileID: 8574803634672608124}
+  m_damageRadiusObj: {fileID: 915004587820540610}
 --- !u!1 &8159453808988727074
 GameObject:
   m_ObjectHideFlags: 0
@@ -142,7 +142,7 @@ GameObject:
   - component: {fileID: 8310428727222122416}
   - component: {fileID: 2825267239453122024}
   - component: {fileID: 915004587820540610}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: DamageRad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -158,7 +158,7 @@ Transform:
   m_GameObject: {fileID: 8574803634672608124}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 0.1, z: 1}
   m_Children: []
   m_Father: {fileID: 5984066361649734003}
   m_RootOrder: 1

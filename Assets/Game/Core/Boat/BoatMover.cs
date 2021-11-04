@@ -25,8 +25,12 @@ public class BoatMover : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject m_dockUI;
 
-    [Header("Prefab Links")]
+    [Header("Mines")]
     [SerializeField] private GameObject m_minePrefab;
+    [SerializeField] private float m_mineCooldown = 2.0f;
+
+    [Header("VFX")]
+    [SerializeField] private GameObject m_explosionVFXPrefab;
 
     private Bounds ModelBounds => m_movementRigidbody.GetComponentInChildren<Collider>().bounds;
     private Ray ColRay => new Ray(ModelBounds.center, Vector3.down);
@@ -38,6 +42,8 @@ public class BoatMover : MonoBehaviour
     private Port m_currentPort = null;
     private bool InDockArea => m_currentPort != null;
     private bool m_isDocked = false;
+
+    private float m_mineCooldownRemaining = 0;
 
     private void Awake()
     {
@@ -53,6 +59,10 @@ public class BoatMover : MonoBehaviour
 
             if (m_isPlayer)
                 m_dockUI.SetActive(true);
+        }
+        else if (other.GetComponentInParent<Mine>())
+        {
+            BlowUp();
         }
     }
 
@@ -71,13 +81,19 @@ public class BoatMover : MonoBehaviour
             Undock();
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.GetComponentInParent<BoatMover>())
+            BlowUp();
+    }
+
     private void FixedUpdate()
     {
         Debug2.DrawCross(ModelBounds.center);
 
         if (!CheckOnWater())
         {
-            DebugDraw(Color.red);
+            BlowUp();
             return;
         }
 
@@ -113,6 +129,8 @@ public class BoatMover : MonoBehaviour
         }
 
         m_isShooting = false;
+
+        m_mineCooldownRemaining -= Time.deltaTime;
     }
 
     public void Steer(Vector3 vect)
@@ -167,7 +185,17 @@ public class BoatMover : MonoBehaviour
 
     private void PlaceMine()
     {
+        if (m_mineCooldownRemaining > 0)
+            return;
+
+        m_mineCooldownRemaining = m_mineCooldown;
         Instantiate(m_minePrefab, ModelBounds.center, Quaternion.identity, null);
+    }
+
+    private void BlowUp()
+    {
+        Instantiate(m_explosionVFXPrefab, ModelBounds.center, Quaternion.identity, null);
+        Destroy(gameObject);
     }
 
     private Vector3 CalculateMovementDir()
@@ -240,10 +268,5 @@ public class BoatMover : MonoBehaviour
             return false;
 
         return hitInfo.collider.CompareTag("Waterplane");
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        Debug.Log($"Entered trigger: {collision.gameObject}");
     }
 }
