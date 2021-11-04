@@ -45,9 +45,12 @@ public class BoatMover : MonoBehaviour
 
     private float m_mineCooldownRemaining = 0;
 
+    private GameManager m_manager;
+
     private void Awake()
     {
         m_isPlayer = GetComponent<PlayerInputSource>() != null;
+        m_manager = FindObjectOfType<GameManager>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -59,6 +62,8 @@ public class BoatMover : MonoBehaviour
 
             if (m_isPlayer)
                 m_dockUI.SetActive(true);
+            else
+                m_manager.EndGame();
         }
         else if (other.GetComponentInParent<Mine>())
         {
@@ -196,6 +201,11 @@ public class BoatMover : MonoBehaviour
     {
         Instantiate(m_explosionVFXPrefab, ModelBounds.center, Quaternion.identity, null);
         Destroy(gameObject);
+
+        if (!m_isPlayer)
+            m_manager.IncrementScore(10);
+        else
+            m_manager.EndGame();
     }
 
     private Vector3 CalculateMovementDir()
